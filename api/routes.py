@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from . import db
-from .models import Movie
+from .models import User, Movie
 from flask_cors import CORS
 
 main = Blueprint("main", __name__)
@@ -13,21 +13,29 @@ def get_movies():
     if request.method == "GET":
         movie_list = Movie.query.all()  # SQLite query method to query the db
         movies = []
+        # print(movie_list.id)
 
         for movie in movie_list:
-            movies.append({"title": movie.title, "rating": movie.rating})
+            print(movie.id, movie.author_id)
+            author = User.query.filter(
+                User.id == movie.author_id).first_or_404()
+            print(author)
+            author_name = author.full_name
+            movies.append(
+                {"title": movie.title, "rating": movie.rating, "author": author_name})
 
-        return jsonify({"movies": movies})
+        return jsonify({"movies": movies}), 200
 
 
 @main.route("/api/v1/movie", methods=["POST", "GET"])
 def movie():
-
+    # print(dir(request))
     if request.method == "POST":
 
         # getting data coming in our request body
         movie_data = request.get_json()
-        print(type(movie_data), dir(movie_data))
+        print(movie_data)
+        # print(type(movie_data), dir(movie_data))
 
         try:
             # CHECKING IF MOVIE DATA IS VALID OR NOT
@@ -39,17 +47,16 @@ def movie():
                 doesExists = db.session.query(Movie.query.filter(
                     Movie.title == new_movie.title).exists()).scalar()
                 if doesExists:
-                    return "Movie already exists!", 422
+                    return jsonify({"message": "Movie already exists!"}), 409
 
                 # ADDING NEWLY CREATED MOVIE TO OUR DB
                 db.session.add(new_movie)
                 db.session.commit()
-
-                return "Successfully Added A Movie", 200
+                return jsonify({"message": "Successfully Added A Movie"}), 200
 
             else:
                 raise Exception(
                     "Bad request error!, please check your request body")
 
         except Exception as ex:
-            return str(ex), 400
+            return jsonify({"message": str(ex)}), 400

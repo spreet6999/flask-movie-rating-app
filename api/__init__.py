@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, current_app
 from flask_sqlalchemy import SQLAlchemy
 
 # print(dir(Flask))
@@ -18,3 +18,7 @@ def create_app():
     app.register_blueprint(main)
 
     return app
+
+
+# if __name__ == "__main__":
+#     create_app().run(debug=True)

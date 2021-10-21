@@ -2,7 +2,7 @@
 
 ## After cloning this project
 
-## make sure you have pipenv installed
+## make sure you have pipenv installed (pip/pip3 install pipenv)
 
 ## then run "pipenv shell" to activate virtual environment
 
@@ -31,6 +31,12 @@
 ## form api import db, create_app
 
 ## db.create_all(app=create_app())
+
+## for other db methods you have to push an application context to your current app
+
+## app = create_app()
+
+## app.app_context().push()
 
 ## this will create a dabase.db file inside you root api folder
 
