@@ -1,5 +1,5 @@
 # import required flask modules
-from flask import Flask, Blueprint, jsonify, request, current_app
+from flask import Flask, Blueprint, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
@@ -8,15 +8,16 @@ from flask_cors import CORS
 # it is being called here it is __init__
 app = Flask(__name__)
 
-db = SQLAlchemy(app)
-bcrypt = Bcrypt(app)
-
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = "False"
 
+db = SQLAlchemy(app)
+bcrypt = Bcrypt(app)
 
 main = Blueprint("main", __name__)
 CORS(main)
+
+# defining database models
 
 
 class User(db.Model):
@@ -46,6 +47,9 @@ class Movie(db.Model):
         return f"Movie(title: {self.title}, rating: {self.rating}, author_id: {self.author_id})"
 
 
+# defining util functions
+
+
 def validateRegisterUserData(userData={}):
     print(userData)
     return True
@@ -56,12 +60,30 @@ def validateLoginUserData(userData={}):
     return True
 
 
+def doesUserExists(userId=None):
+    if userId:
+        doesExist = User.query.get(userId)
+
+    print(doesExist)
+
+    return True if doesExist != None else False
+
+
+def getUnpackedDict(arg):
+    result = []
+    print(arg)
+    for k in arg:
+        print(k)
+        result.append(arg[k])
+    print(result)
+    return result
+
+
 @main.route("/api/v1/movies", methods=["GET"])
-def get_movies():
+def movies_all():
     if request.method == "GET":
         movie_list = Movie.query.all()  # SQLite query method to query the db
         movies = []
-        # print(movie_list.id)
 
         for movie in movie_list:
             print(movie.id, movie.author_id)
@@ -82,63 +104,67 @@ def movie():
 
         # getting data coming in our request body
         movie_data = request.get_json()
-        print(movie_data)
-        # print(type(movie_data), dir(movie_data))
+
+        author_id, rating, title = getUnpackedDict(movie_data)
+        print(author_id, rating, title)
 
         try:
             # CHECKING IF MOVIE DATA IS VALID OR NOT
-            if movie_data and ("title" in movie_data) and ("rating" in movie_data):
-                new_movie = Movie(
-                    title=movie_data["title"], rating=movie_data["rating"])
+            if ("author_id" in movie_data) and doesUserExists(author_id):
+                if movie_data and ("title" in movie_data) and ("rating" in movie_data):
+                    new_movie = Movie(
+                        title=movie_data["title"], rating=movie_data["rating"], author_id=movie_data["author_id"])
 
-                # CHECKING IF MOVIE ALREADY EXISTS
-                doesExists = db.session.query(Movie.query.filter(
-                    Movie.title == new_movie.title).exists()).scalar()
-                if doesExists:
-                    return jsonify({"message": "Movie already exists!"}), 409
+                    # CHECKING IF MOVIE ALREADY EXISTS
+                    doesMovieExists = db.session.query(Movie.query.filter(
+                        Movie.title == new_movie.title).exists()).scalar()
+                    if doesMovieExists:
+                        return jsonify({"message": "Movie already exists!"}), 409
 
-                # ADDING NEWLY CREATED MOVIE TO OUR DB
-                db.session.add(new_movie)
-                db.session.commit()
-                return jsonify({"message": "Successfully Added A Movie"}), 200
+                    # ADDING NEWLY CREATED MOVIE TO OUR DB
+                    db.session.add(new_movie)
+                    db.session.commit()
+                    return jsonify({"message": "Successfully Added A Movie"}), 200
 
+                else:
+                    raise Exception(
+                        "Bad request error!, please check your request body")
             else:
-                raise Exception(
-                    "Bad request error!, please check your request body")
+                raise Exception("User not found. Please login first!")
 
         except Exception as ex:
             return jsonify({"message": str(ex)}), 400
 
 
-@main.route("/register", methods=['POST'])
-def register():
+@main.route("/api/v1/user/register", methods=['POST'])
+def user_register():
     user_data = request.get_json()
     if validateRegisterUserData(user_data):
         hashed_password = bcrypt.generate_password_hash(
-            user_data.data.password).decode('utf-8')
-        user = User(username=user_data.data.username,
-                    email=user_data.data.email, password=hashed_password)
+            user_data.password).decode('utf-8')
+        user = User(username=user_data.username,
+                    email=user_data.email, password=hashed_password)
         db.session.add(user)
         db.session.commit()
         return jsonify({"message": 'Your account has been created! You are now able to log in'}), 200
     return jsonify({"message": "Please check your entries!"}), 401
 
 
-@main.route("/login", methods=['GET', 'POST'])
-def login():
+@main.route("/api/v1/user/login", methods=['GET', 'POST'])
+def user_login():
     user_data = request.get_json()
 
     if (validateLoginUserData(user_data)):
-        user = User.query.filter_by(email=user_data.email.data).first()
-        if user and bcrypt.check_password_hash(user.password, user_data.password.data):
+        user = User.query.filter_by(email=user_data.email).first()
+        if user and bcrypt.check_password_hash(user.password, user_data.password):
             return jsonify({"message": "Successfully logged In!"}), 200
         else:
             return jsonify({"message": 'Login Unsuccessful. Please check email or password'}), 401
     return jsonify({"message": "Please check your entries!"}), 401
 
 
-@main.route("/logout")
-def logout():
+@main.route("/api/v1/user/logout")
+def user_logout():
     # logic here!
     return jsonify({"message": "Successfully logged out!"}), 200
 

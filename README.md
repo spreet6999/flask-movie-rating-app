@@ -22,23 +22,15 @@
 
 ## Now setup your database with database tables structure, to do so please follow the below commands:
 
-## make sure you have deleted any pre-existing database.db file and you are inside the root pipenv folder and pipenv is active (virtual environment is active)
+## make sure you have deleted any pre-existing database.db file and you are inside the root folder and virtual env is active
 
 ## python3 (you will dive into python interpreter)
 
-## from api.models import Movie
+## for setting up database run dbSetup.py inside src
 
-## form api import db, create_app
+## python3 src/dbSetup.py
 
-## db.create_all(app=create_app())
-
-## for other db methods you have to push an application context to your current app
-
-## app = create_app()
-
-## app.app_context().push()
-
-## this will create a dabase.db file inside you root api folder
+## this will create a database.db file inside you root api folder
 
 ## you can now consume these apis
 
