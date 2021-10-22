@@ -1,5 +1,5 @@
 # import required flask modules
-from flask import Flask, Blueprint, jsonify, request
+from flask import Flask, Blueprint, json, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
@@ -71,11 +71,9 @@ def doesUserExists(userId=None):
 
 def getUnpackedDict(arg):
     result = []
-    print(arg)
     for k in arg:
         print(k)
         result.append(arg[k])
-    print(result)
     return result
 
 
@@ -87,17 +85,21 @@ def movies_all():
 
         for movie in movie_list:
             print(movie.id, movie.author_id)
+
+            # finding author for particular movie
             author = User.query.filter(
                 User.id == movie.author_id).first_or_404()
-            print(author)
             author_name = author.full_name
+
             movies.append(
-                {"title": movie.title, "rating": movie.rating, "author": author_name})
+                {"movie_id": movie.id, "title": movie.title, "rating": movie.rating, "author": author_name})
 
         return jsonify({"movies": movies}), 200
 
+    return jsonify({"message": "This method not allowed on this api!"}), 405
 
-@main.route("/api/v1/movie", methods=["POST", "GET"])
+
+@main.route("/api/v1/movie", methods=["POST", "DELETE"])
 def movie():
     # print(dir(request))
     if request.method == "POST":
@@ -105,6 +107,7 @@ def movie():
         # getting data coming in our request body
         movie_data = request.get_json()
 
+        # only for experiment purpose
         author_id, rating, title = getUnpackedDict(movie_data)
         print(author_id, rating, title)
 
@@ -116,8 +119,9 @@ def movie():
                         title=movie_data["title"], rating=movie_data["rating"], author_id=movie_data["author_id"])
 
                     # CHECKING IF MOVIE ALREADY EXISTS
-                    doesMovieExists = db.session.query(Movie.query.filter(
-                        Movie.title == new_movie.title).exists()).scalar()
+                    doesMovieExists = bool(Movie.query.filter(
+                        Movie.title == new_movie.title).first())
+                    print(doesMovieExists)
                     if doesMovieExists:
                         return jsonify({"message": "Movie already exists!"}), 409
 
@@ -135,8 +139,32 @@ def movie():
         except Exception as ex:
             return jsonify({"message": str(ex)}), 400
 
+    if request.method == "DELETE":
 
-@main.route("/api/v1/user/register", methods=['POST'])
+        try:
+            # getting movie id from query parameter
+            movieId = int(request.args.get("movieId"))
+            print(movieId, type(movieId))
+
+            movieToDelete = Movie.query.filter(
+                Movie.id == movieId).first()
+
+            doesMovieExists = bool(movieToDelete)
+
+            if not(doesMovieExists):
+                return jsonify({"message": "Movie does not exists!"}), 400
+
+            db.session.delete(movieToDelete)
+            db.session.commit()
+
+            return jsonify({"message": "Sucessfully Deleted!!"}), 200
+        except:
+            return jsonify({"message": "Query parameter is not appropriate!"}), 400
+
+    return jsonify({"message": "This method not allowed on this api!"}), 405
+
+
+@main.route("/api/v1/user", methods=['POST'])
 def user_register():
     user_data = request.get_json()
     if validateRegisterUserData(user_data):
@@ -150,7 +178,7 @@ def user_register():
     return jsonify({"message": "Please check your entries!"}), 401
 
 
-@main.route("/api/v1/user/login", methods=['GET', 'POST'])
+@main.route("/api/v1/login", methods=['GET', 'POST'])
 def user_login():
     user_data = request.get_json()
 
@@ -163,7 +191,7 @@ def user_login():
     return jsonify({"message": "Please check your entries!"}), 401
 
 
-@main.route("/api/v1/user/logout")
+@main.route("/api/v1/logout")
 def user_logout():
     # logic here!
     return jsonify({"message": "Successfully logged out!"}), 200
