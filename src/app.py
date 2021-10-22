@@ -1,5 +1,6 @@
 # import required flask modules
 from flask import Flask, Blueprint, json, jsonify, request
+from werkzeug.datastructures import _options_header_vkw
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
@@ -61,6 +62,7 @@ def validateLoginUserData(userData={}):
 
 
 def doesUserExists(userId=None):
+    doesExist = None
     if userId:
         doesExist = User.query.get(userId)
 
@@ -108,12 +110,12 @@ def movie():
         movie_data = request.get_json()
 
         # only for experiment purpose
-        author_id, rating, title = getUnpackedDict(movie_data)
-        print(author_id, rating, title)
+        # author_id, rating, title, *others = getUnpackedDict(movie_data)
+        # print(author_id, rating, title)
 
         try:
             # CHECKING IF MOVIE DATA IS VALID OR NOT
-            if ("author_id" in movie_data) and doesUserExists(author_id):
+            if ("author_id" in movie_data) and doesUserExists(movie_data["author_id"]):
                 if movie_data and ("title" in movie_data) and ("rating" in movie_data):
                     new_movie = Movie(
                         title=movie_data["title"], rating=movie_data["rating"], author_id=movie_data["author_id"])
