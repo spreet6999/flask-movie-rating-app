@@ -2,19 +2,19 @@
 
 ## After cloning this project
 
-## make sure you have pipenv installed (pip/pip3 install pipenv)
+## make sure you have python installed with version 3.9.7
 
-## then run "pipenv shell" to activate virtual environment
+## make sure you have venv installed (pip/pip3 install venv)
 
-## then run pipenv install
+## then run below commands in your project root folder to activate virtual environment
 
-## then we have to set environment variables to run the flask app, to do so please follow the below commands:
+## python3 -m venv env
 
-## export FLASK_APP=api
+## for MAC - source env/bin/activate
 
-## export FLASK_ENV=development
+## then run pip3 install
 
-## flask run
+## run - python3 app.py
 
 ## this will run your flask application
 
