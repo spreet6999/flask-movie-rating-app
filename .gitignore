@@ -5,6 +5,8 @@ __pycache__/
 
 # All db files
 *.db
+*.csv
+*.json
 
 # C extensions
 *.so
