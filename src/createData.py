@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from random import randrange
 import pandas as pd
 
-date = datetime(1900, 1, 1)
+date = datetime(1970, 1, 1)
 
 time_list = []
 sales = []

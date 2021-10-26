@@ -1,13 +1,23 @@
 # import required flask modules
 from flask import Flask, Blueprint, json, jsonify, request
-from werkzeug.datastructures import _options_header_vkw
+import pandas as pd
+import time
 # from flask_sqlalchemy import SQLAlchemy
 # from flask_bcrypt import Bcrypt
 from flask_cors import CORS
-
 # this __name__ will point to current file in which
 # it is being called here it is __init__
 app = Flask(__name__)
+
+# getting df
+start_time = time.time()
+df = pd.read_json("sales_data.json", orient="records",
+                  convert_dates=True, keep_default_dates=True)
+print(df.shape)
+
+end_time = time.time()
+duration = round(end_time-start_time, 3)
+print(f'df_sales_data read in {duration}')
 
 # app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 # app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = "False"
@@ -17,11 +27,6 @@ app = Flask(__name__)
 
 CORS(app)
 
-
-@app.route("/", methods=["GET"])
-def exp_route():
-    return "Hello World", 200
-
-
-if __name__ == "__main__":
-    app.run(debug=True)
+# if __name__ == "__main__":
+#     print("inside if")
+#     app.run(debug=True)
