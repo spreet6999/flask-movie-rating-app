@@ -11,9 +11,11 @@ app = Flask(__name__)
 
 # getting df
 start_time = time.time()
-df = pd.read_json("sales_data.json", orient="records",
-                  convert_dates=True, keep_default_dates=True)
-print(df.shape)
+# df = pd.read_json("sales_data.json", orient="records",
+#                   convert_dates=True, keep_default_dates=True)
+# df = pd.read_json("sales_data.json", orient="records")
+df_cleaned_post_update_edit = pd.read_csv("df_cleaned_post_update_edit.csv", index_col=False)
+print(df_cleaned_post_update_edit.shape)
 
 end_time = time.time()
 duration = round(end_time-start_time, 3)

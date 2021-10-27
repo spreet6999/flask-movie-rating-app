@@ -10,11 +10,15 @@ sales = []
 for i in range(0, 1000000):
     new_ts = date + timedelta(hours=i)
     sales.append(randrange(10))
-    time_list.append(new_ts)
+    time_list.append(str(new_ts))
 
 print(time_list[-1], sales[0])
 
-time_sales_dict = {"time": time_list, "sales": sales}
+time_sales_dict = {}
+time_sales_dict["time"] = time_list
+time_sales_dict["sales"] = sales
+for i in range(100):
+    time_sales_dict[f"sales_{i+1}"] = sales
 
 # Create DataFrame
 df = pd.DataFrame(time_sales_dict)
