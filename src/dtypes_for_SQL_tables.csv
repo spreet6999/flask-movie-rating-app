@@ -1,0 +1,68 @@
+column_name,sql_datatype,py_datatype
+Material,VARCHAR(8000),str
+Material Desc(CM),VARCHAR(8000),str
+BU,VARCHAR(8000),str
+SBU,VARCHAR(8000),str
+SubSBU,VARCHAR(8000),str
+Division,VARCHAR(8000),str
+Category,VARCHAR(8000),str
+Portfolio,VARCHAR(8000),str
+Brand,VARCHAR(8000),str
+reg_list,VARCHAR(8000),str
+Global_ActiveFlag,DOUBLE PRECISION,float
+Gbl Prev 12Mo GSV $,DOUBLE PRECISION,float
+Gbl Prev 12Mo Qty,DOUBLE PRECISION,float
+Gbl Prev 12Mo Margin ($),DOUBLE PRECISION,float
+ave_sales_price,DOUBLE PRECISION,float
+Gbl Prev 12Mo Margin Rate%,DOUBLE PRECISION,float
+A/B/C/D_Gbl2 (BySBU),VARCHAR(8000),str
+long description,VARCHAR(8000),str
+attributes,VARCHAR(8000),str
+images,VARCHAR(8000),str
+seg features,VARCHAR(8000),str
+Segment 1,VARCHAR(8000),str
+Segment 2,VARCHAR(8000),str
+Segment 3,VARCHAR(8000),str
+Segment 4,VARCHAR(8000),str
+Segment 5,VARCHAR(8000),str
+Segment 6,VARCHAR(8000),str
+Segment 7,VARCHAR(8000),str
+Segment 8,VARCHAR(8000),str
+Segment 9,VARCHAR(8000),str
+Segment 10,VARCHAR(8000),str
+Material Desc(CM)_clean,VARCHAR(8000),str
+Material Desc(CM)_clean2,VARCHAR(8000),str
+long description_clean,VARCHAR(8000),str
+long description_clean2,VARCHAR(8000),str
+Grouping,VARCHAR(8000),str
+Material_base,VARCHAR(8000),str
+Material_suffix,VARCHAR(8000),str
+Material_suffix_temp,VARCHAR(8000),str
+Definition four code_x,DOUBLE PRECISION,float
+Four Code_x,VARCHAR(8000),str
+Definition three code_x,VARCHAR(8000),str
+Three Code_x,VARCHAR(8000),str
+Definition two code_x,VARCHAR(8000),str
+Two Code_x,VARCHAR(8000),str
+Definition one code_x,VARCHAR(8000),str
+One Code_x,VARCHAR(8000),str
+Definition four code_y,DOUBLE PRECISION,float
+Four Code_y,DOUBLE PRECISION,float
+Definition three code_y,DOUBLE PRECISION,float
+Three Code_y,DOUBLE PRECISION,float
+Definition two code_y,VARCHAR(8000),str
+Two Code_y,VARCHAR(8000),str
+Definition one code_y,VARCHAR(8000),str
+One Code_y,VARCHAR(8000),str
+Code,VARCHAR(8000),str
+Voltage,VARCHAR(8000),str
+Language,VARCHAR(8000),str
+Country Codes,VARCHAR(8000),str
+GPP_SBU,VARCHAR(8000),str
+GPP SBU Description,VARCHAR(8000),str
+SalesThreshold,DOUBLE PRECISION,float
+Region,VARCHAR(8000),str
+SalesThresholdList,VARCHAR(8000),str
+gate_keeper_ratio_gsv,DOUBLE PRECISION,float
+gate_keeper_ratio_gsm,DOUBLE PRECISION,float
+Add Notes,VARCHAR(8000),str

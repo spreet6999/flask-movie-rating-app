@@ -22,7 +22,10 @@ from src.portfolio_ai.nodes import post_processing_and_analysis
 import json
 import requests
 
-api_base_url = "https://495d-112-133-244-168.ngrok.io"
+# api_base_url = "https://1a23-112-133-244-168.ngrok.io"
+# ! User host.docker.internal instead of localhost
+api_base_url = "http://host.docker.internal:9999"
+
   
 # #Create and configure logger
 # logging.basicConfig(filename="newfile.log",filemode='w')
@@ -608,6 +611,12 @@ def create_waterfall_three_col(control_title="Plot controls: ", data=None,
         response = requests.post(f'{api_base_url}/pareto_chart_data', json = {"filters":user_selected_filters})
         # print ("response",response)
         json = response.json()
+        # print (json)
+        # print (len(json))
+        # if len(json) == 0:
+        #     print ("I CAME HERE")
+        #     fig = html.P("No data for selected filters. Please change the filters"),
+        #     return fig
         # print ("json", json)
         # start_time = time.time()
         # response = requests.get('https://595c-112-133-244-168.ngrok.io/pareto_chart_data')
