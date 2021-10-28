@@ -16,124 +16,81 @@ def get_datatypes(df):
         dtype_dict[k] = sql_datatype
     return dtype_dict
 
-# ! Read tables
-# df_cleaned = pd.read_csv("master_dataframe_cln_25K.csv")
-df_cleaned = pd.read_csv("df_cleaned_post_update_edit.csv")
-print(df_cleaned.shape)
+# ! Defining required mappers
 dtype_mapper = {"<class 'str'>": "VARCHAR(8000)", "<class 'float'>": "DOUBLE PRECISION"}
 py_dtype_mapper = {"VARCHAR(8000)": "str", "DOUBLE PRECISION": "float"}
+
+# ! Manipulate dataframe
+# READ DF
+# df_name = "master_dataframe_cln_25K.csv"
+df_name = "df_cleaned_post_update_edit.csv"
+df_cleaned = pd.read_csv(df_name, index_col=False)
+
+# THIS NEEDS TO BE DONE FOR DF
 dtype_dict_df_cleaned = get_datatypes(df_cleaned)
+# Add sql_datatype
 dtypes_df = pd.DataFrame.from_dict(dtype_dict_df_cleaned, orient="index", columns=["sql_datatype"]).reset_index()
 dtypes_df.rename(columns={"index": "column_name"}, inplace=True)
-dtypes_df.to_csv("dtypes_for_SQL_tables.csv")
-df_types_for_table_cols = pd.read_csv("dtypes_for_SQL_tables.csv")
+# Add py_datatype
+dtypes_df["py_datatype"] = dtypes_df["sql_datatype"].apply(lambda x: py_dtype_mapper[x])
+dtypes_df.to_csv("dtypes_for_SQL_tables.csv", index=False)
 
-# ! Cursor
+# ONCE DONE, WE CAN JUST READ THIS DF
+dtypes_df = pd.read_csv("dtypes_for_SQL_tables.csv")
+print ("dtypes_df", dtypes_df.shape)
+# dtypes_df.head(20)
+
+# Correct dtypes for all columns in main df to match the SQL table schema
+col_list = df_cleaned.columns
+entries_helper_list = []
+for col_name in col_list:
+    dtypes_df_subset = dtypes_df[dtypes_df["column_name"] == col_name]
+    py_datatype_col = list(dtypes_df_subset["py_datatype"])
+    py_datatype = py_datatype_col[0]
+    if py_datatype == "str":
+        df_cleaned[col_name] = df_cleaned[col_name].astype(str)
+    if py_datatype == "float":
+        df_cleaned[col_name] = df_cleaned[col_name].astype(float)
+        # convert nan to 0.0
+        df_cleaned[col_name] = df_cleaned[col_name].apply(lambda x: 0.0 if math.isnan(x) else x)
+col_list_len = len(col_list)
+entries_helper = list(map(lambda x: "%s",range(col_list_len)))
+
+# ! Make query
+table_name = "master_dataframe_cln_and_edited"
+delete_query_string = f"DROP TABLE IF EXISTS {table_name};"
+create_table_query = f"CREATE TABLE {table_name}("
+for index, row in dtypes_df.iterrows():
+    subquery_string = f'"{row["column_name"]}" {row["sql_datatype"]}'
+    create_table_query = create_table_query + "\n" + subquery_string + ","
+#     comma_sep = ","
+#     if index == 0:
+#         comma_sep = ""
+#         create_table_query = create_table_query + "\n" + subquery_string
+#     else:
+create_table_query = re.sub(",$", "", create_table_query)
+create_table_query = create_table_query + ");"
+print ("delete_query_string", delete_query_string)
+print ("create_table_query", create_table_query)
+
+entries_helper_text = ", ".join(entries_helper)
+# Add double quotes to each column name
+col_list_with_double_quotes = list(map(lambda x: f'"{x}"', col_list))
+# Replace % with %% in column name
+# REF: https://stackoverflow.com/questions/29932970/updating-table-with-percent-sign-in-column-name
+col_list_with_percent_replaced = list(map(lambda x: x.replace("%", "%%"), col_list_with_double_quotes))
+col_names_query = ", ".join(col_list_with_percent_replaced)
+insert_data_query = f"INSERT INTO {table_name}({col_names_query}) VALUES ({entries_helper_text})"
+print ("insert_data_query", insert_data_query)
+ 
+# ! Make df_cleaned as table
+# Execute query to load data to tables
+df_cleaned_as_list_of_tuples = list(map(lambda _list: tuple(_list), df_cleaned.values))
+
+# ! Connect to postgresql and run query
 conn = psycopg2.connect(dbname="dash_app", user="postgres",host="localhost", password="1234")
 cur = conn.cursor()
-
-# ! Drop and create tables: create_db_tables
-delete_query_string = "DROP TABLE IF EXISTS master_dataframe_cln;"
-query_string = "CREATE TABLE master_dataframe_cln("
-for index, row in df_types_for_table_cols.iterrows():
-    subquery_string = f'"{row["column_name"]}" {row["sql_datatype"]}'
-    comma_sep = ","
-    if index == 0:
-        comma_sep = ""
-        query_string = query_string + "\n" + subquery_string
-    else:
-        query_string = query_string + comma_sep + "\n" + subquery_string
-query_string = query_string + " );"
-#     print(query_string)
 cur.execute(delete_query_string)
-cur.execute(query_string)
+cur.execute(create_table_query)
+cur.executemany(insert_data_query, df_cleaned_as_list_of_tuples)
 conn.commit()
-# def create_db_tables(df_types_for_table_cols):
- 
-
-# ! Insert data into tables
-# def insert_data_in_db(df_data):
-column_name = dtype_dict_df_cleaned.keys()
-query_string = "INSERT INTO master_dataframe_cln"
-subquery_string = "("
-
-counter = 0
-for i in column_name:
-    subquery_string = subquery_string + f'"{i}", '
-    counter = counter + 1
-print ("counter", counter)
-subquery_string = re.sub(", $", "", subquery_string)
-query_string = query_string + subquery_string + ")"
-
-for index, row in df_cleaned.iterrows():
-    print("At index: ", index)
-#         query_string = f'INSERT INTO master_dataframe_cln(Material) VALUES("GHYUF67")'
-    entries_helper = ""
-    entries_query=""
-    entries = []
-    for i in column_name:
-        value = row[i]
-
-        sql_dtype = dtype_dict_df_cleaned[i]
-        py_dtype = py_dtype_mapper[sql_dtype]
-
-        final_value = value
-        final_value_str = ""
-        if py_dtype == "str":
-            final_value = str(value)
-#                 final_value = "SampleText"
-            if isinstance(final_value,str):
-                if final_value == "nan":
-                    final_value = "EMPTY VALUE"
-            final_value= re.sub('''['"]+''', '', final_value)
-            final_value_str = f"""'{final_value}'"""
-        if py_dtype == "float":
-            final_value = float(value)
-#                 final_value = 1.0
-            if isinstance(final_value,float):
-                if math.isnan(final_value):
-                    final_value = 0
-            final_value_str = f'{final_value}'
-
-#             if isinstance(final_value,float):
-#                 if math.isnan(final_value):
-#                     final_value = 0
-        
-#             if isinstance(final_value,str):
-#                 if final_value == "nan":
-#                     final_value = "EMPTY VALUE"
-                
-        entries.append(final_value)
-        entries_helper = entries_helper + "%s,"
-        entries_query = entries_query + final_value_str + ","
-
-    entries_helper = re.sub(",$", "", entries_helper)
-    entries_query = re.sub(",$", "", entries_query)
-    print(len(entries))
-
-    per_s_len = len(re.findall("%s", entries_helper))
-    print(per_s_len)
-    entries = tuple(entries)
-#         print(entries)
-
-#         final_query = f'{query_string} VALUES({entries_helper});'
-    final_query = f'{query_string} VALUES({entries_query});'
-#         print(final_query)
-
-#         print(final_query)
-    print("\n##############\n")
-#         print(entries)
-
-#         cur.execute(final_query)
-#         return entries
-#         print(final_query)
-    print ("\n")
-#         print(entries)
-#         return entries
-#         final_query = cur.mogrify(final_query, entries)
-#         print(final_query)
-    cur.execute(final_query)
-#         cur.execute(final_query, entries)
-    conn.commit()
-        
-        
