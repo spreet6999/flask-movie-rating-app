@@ -5,6 +5,12 @@ import pandas as pd
 import psycopg2
 import math
 
+# ! Defining required variables
+dbname = "dash_app"
+host = "host.docker.internal" #this means "localhost" inside docker
+user = "postgres"
+password = "1234"
+
 # ! Defining required functions
 def get_datatypes(df):
     dtype_dict = {}
@@ -24,7 +30,9 @@ py_dtype_mapper = {"VARCHAR(8000)": "str", "DOUBLE PRECISION": "float"}
 # READ DF
 # df_name = "master_dataframe_cln_25K.csv"
 df_name = "df_cleaned_post_update_edit.csv"
-df_cleaned = pd.read_csv(df_name, index_col=False)
+path = 'data/poc'
+df_cleaned = pd.read_csv(f"{path}/{df_name}", index_col=False)
+print (df_cleaned.shape)
 
 # THIS NEEDS TO BE DONE FOR DF
 dtype_dict_df_cleaned = get_datatypes(df_cleaned)
@@ -86,9 +94,10 @@ print ("insert_data_query", insert_data_query)
 # ! Make df_cleaned as table
 # Execute query to load data to tables
 df_cleaned_as_list_of_tuples = list(map(lambda _list: tuple(_list), df_cleaned.values))
+print (len(df_cleaned_as_list_of_tuples))
 
 # ! Connect to postgresql and run query
-conn = psycopg2.connect(dbname="dash_app", user="postgres",host="localhost", password="1234")
+conn = psycopg2.connect(dbname=dbname, user=user,host=host, password=password)
 cur = conn.cursor()
 cur.execute(delete_query_string)
 cur.execute(create_table_query)

@@ -691,7 +691,7 @@ def create_waterfall_three_col(control_title="Plot controls: ", data=None,
         # print("value_cols", value_cols)
         #  ! SORT WILL HAPPEN IN DB
         # temp = temp.sort_values(value_cols[0], ascending=False)
-
+        
         temp = pd.DataFrame.from_dict(json)
         # temp.to_csv("final_pareto_chart.csv", index=False)
 
