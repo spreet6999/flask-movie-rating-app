@@ -21,6 +21,7 @@ from apps import template, template_obj
 from src.portfolio_ai.nodes import post_processing_and_analysis
 import json
 import requests
+from queryDataFromDb.queryDataFromDb import get_pareto_chart_filter_values, get_pareto_chart_data_from_db
 
 # api_base_url = "https://1a23-112-133-244-168.ngrok.io"
 # ! User host.docker.internal instead of localhost
@@ -408,7 +409,7 @@ def create_waterfall_three_col(control_title="Plot controls: ", data=None,
     # data.to_csv("df_cleaned_post_update_edit.csv", index=False)
     # data = request
 
-    # # ! API : /pareto_chart_data
+    # API : /pareto_chart_data
     # # response = requests.get('http://localhost:9999/pareto_chart_data', verify=False)
     # start_time = time.time()
     # response = requests.get('https://595c-112-133-244-168.ngrok.io/pareto_chart_data')
@@ -438,12 +439,13 @@ def create_waterfall_three_col(control_title="Plot controls: ", data=None,
     # * TEMP
     # ! FILTER DATA FROM API
     # # ! API : /pareto_chart_filter_values
-    start_time = time.time()
-    response = requests.get(f'{api_base_url}/pareto_chart_filter_values')
-    end_time = time.time()
-    print(f'RESPONSE in {round(end_time-start_time, 3)} seconds')
-    json = response.json()
-    print ("FILTER JSON", json)
+    # start_time = time.time()
+    # response = requests.get(f'{api_base_url}/pareto_chart_filter_values')
+    # end_time = time.time()
+    # print(f'RESPONSE in {round(end_time-start_time, 3)} seconds')
+    # json = response.json()
+    # print ("FILTER JSON", json)
+    json = get_pareto_chart_filter_values()
     sbu_data = json["SBU"]
     sub_sbu_data = json["SubSBU"]
     dd_filter_html_4, filter_input_4, filter_id_4 = dd_build_TEMP(col_values=sub_sbu_data)
@@ -606,11 +608,11 @@ def create_waterfall_three_col(control_title="Plot controls: ", data=None,
         user_selected_filters = {"SBU":sbu_filter_val, "SubSBU":sub_sbu_filter_val}
         print ("user_selected_filters", user_selected_filters)
 
-        # # ! API : /pareto_chart_data
-        # # response = requests.post('http://localhost:9999/pareto_chart_data', verify=False)
-        response = requests.post(f'{api_base_url}/pareto_chart_data', json = {"filters":user_selected_filters})
-        # print ("response",response)
-        json = response.json()
+        # # # ! API : /pareto_chart_data
+        # response = requests.post(f'{api_base_url}/pareto_chart_data', json = {"filters":user_selected_filters})
+        # json = response.json()
+        payload = {"filters":user_selected_filters}
+        json = get_pareto_chart_data_from_db(payload)
         # print (json)
         # print (len(json))
         # if len(json) == 0:
